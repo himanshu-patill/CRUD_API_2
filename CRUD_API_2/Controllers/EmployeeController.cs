@@ -10,51 +10,55 @@ namespace CRUD_API_2.Controllers
 {
     public class EmployeeController : ApiController
     {
-        Entities db = new Entities();
 
-        public IEnumerable<Employee> Get()
+        //EmployeeRepository _repository = new EmployeeRepository();
+
+        private  IEmployeeRepository _repository;
+
+        public EmployeeController(IEmployeeRepository repository)
         {
-            return db.Employees.ToList();
+            _repository = repository;
         }
 
-        public Employee Get(int id)
+        public IEnumerable<Employee> GetAll()
         {
-            Employee employee = db.Employees.Find(id);
-            return employee;
-
+            return _repository.GetAll();
         }
 
-        public Employee Post(Employee employee)
+        public IHttpActionResult Get(int id)
         {
-            db.Employees.Add(employee);
-            db.SaveChanges();
-            return employee;
+            var employee = _repository.Get(id);
+            if (employee == null)
+            {
+                return NotFound();
+            }
+            return Ok(employee);
         }
 
-        public string Put(int id, Employee employee)
+        public IHttpActionResult Post(Employee employee)
         {
-            var employee_ = db.Employees.Find(id);
+            _repository.Post(employee);
+            if (employee == null)
+            {
+                return NotFound();
+            }
+            return Ok(employee);
+        }
 
-            employee_.name = employee.name;
-            employee_.designation = employee.designation;
-            employee_.salary = employee.salary;
-
-            db.Entry(employee_).State = System.Data.Entity.EntityState.Modified;
-
-            db.SaveChanges();
-
-            return "Record Updated";
+        public IHttpActionResult Put(int id, Employee employee)
+        {
+            _repository.Put(id, employee);
+            if (employee == null ) //add id filter
+            {
+                return NotFound();
+            }
+            return Ok(employee);
         }
 
         public string Delete(int id)
         {
-            Employee employee = db.Employees.Find(id);
-            db.Employees.Remove(employee);
-            db.SaveChanges();
-            return "Record deleted";
+            return _repository.Delete(id);
         }
-
-
 
     }
 }
